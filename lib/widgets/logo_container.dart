@@ -7,7 +7,7 @@ class BoxLogo extends StatelessWidget {
   Widget build(BuildContext context) {
     return Container(
       width: 150,
-      height: 200,
+      height: 100,
       decoration: BoxDecoration(
         image: DecorationImage(
           image: AssetImage('assets/images/logo.png'),
