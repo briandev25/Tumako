@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 
 List<Map<String, dynamic>> userData = [
-  {"title": "Pending Approval", "value": 7},
+  {"title": "Completed", "value": 7},
   {"title": "In Transit", "value": 3},
   {"title": "Delivered", "value": 15},
   {"title": "Cancelled", "value": 3},
