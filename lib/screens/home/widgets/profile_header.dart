@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:tumako/screens/add_shipment.dart';
 
 class ProfileHeader extends StatelessWidget {
   const ProfileHeader({super.key});
@@ -35,7 +36,9 @@ class ProfileHeader extends StatelessWidget {
           Spacer(),
           IconButton(
             onPressed: () {
-              print("Add button clicked");
+              Navigator.of(
+                context,
+              ).push(MaterialPageRoute(builder: (context) => AddShipment()));
             },
             icon: Icon(Icons.add, size: 35.0),
           ),
