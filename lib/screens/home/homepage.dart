@@ -62,19 +62,22 @@ class Homepage extends StatelessWidget {
           ),
         ),
       ),
-      bottomNavigationBar: Container(
-        padding: EdgeInsets.all(10.0),
-        color: AppColors.secondaryColor,
-        child: GNav(
-          gap: 8.0,
-          tabBackgroundColor: Colors.grey.shade200,
-          tabs: [
-            GButton(icon: Icons.home, text: "Home"),
-            GButton(icon: Icons.local_shipping, text: "Shipping"),
-
-            GButton(icon: Icons.person, text: "Profile"),
-            GButton(icon: Icons.wallet, text: "wallet"),
-          ],
+      bottomNavigationBar: SafeArea(
+        bottom: true,
+        child: Container(
+          padding: EdgeInsets.symmetric(horizontal: 10.0),
+          color: AppColors.secondaryColor,
+          child: GNav(
+            gap: 3.0,
+            tabBackgroundColor: Colors.grey.shade200,
+            textStyle: TextStyle(fontSize: 10.0),
+            tabs: [
+              GButton(icon: Icons.home, text: "Home"),
+              GButton(icon: Icons.local_shipping, text: "Shipping"),
+              GButton(icon: Icons.person, text: "Profile"),
+              GButton(icon: Icons.wallet, text: "wallet"),
+            ],
+          ),
         ),
       ),
     );

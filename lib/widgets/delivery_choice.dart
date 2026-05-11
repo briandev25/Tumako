@@ -5,11 +5,13 @@ class DeliveryChoice extends StatelessWidget {
   final String query;
   final List<String> choices;
   final String hintText;
+  final Function(String?)? onChanged;
   const DeliveryChoice({
     super.key,
     required this.query,
     required this.choices,
     required this.hintText,
+    required this.onChanged,
   });
 
   @override
@@ -34,7 +36,13 @@ class DeliveryChoice extends StatelessWidget {
                     DropdownMenuItem(value: choice, child: Text(choice)),
               )
               .toList(),
-          onChanged: (value) {},
+          validator: (value) {
+            if (value == null || value.isEmpty) {
+              return 'Please select an option';
+            }
+            return null;
+          },
+          onChanged: onChanged,
         ),
         SizedBox(height: 25.0),
       ],

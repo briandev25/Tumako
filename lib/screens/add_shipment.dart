@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:tumako/screens/pick_location.dart';
 import '../widgets/delivery_choice.dart';
 import '../widgets/delivery_query.dart';
 
@@ -53,6 +54,12 @@ class _AddShipmentState extends State<AddShipment> {
   final _formKey = GlobalKey<FormState>();
   DateTime? _selectedDate;
 
+  String? phase;
+  String? materialType;
+  String? quantityType;
+  String? vehicleType;
+  int? quantity;
+
   Future<void> _pickDate() async {
     DateTime? datePicked = await showDatePicker(
       context: context,
@@ -71,11 +78,12 @@ class _AddShipmentState extends State<AddShipment> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      appBar: AppBar(backgroundColor: Colors.grey[200]),
       backgroundColor: Colors.grey[200],
       body: SafeArea(
         child: SingleChildScrollView(
           child: Container(
-            margin: EdgeInsets.symmetric(horizontal: 15.0, vertical: 20.0),
+            margin: EdgeInsets.symmetric(horizontal: 15.0),
 
             child: Form(
               key: _formKey,
@@ -86,6 +94,19 @@ class _AddShipmentState extends State<AddShipment> {
                       query: item["query"],
                       choices: item["choices"],
                       hintText: item["hint"],
+                      onChanged: (value) {
+                        setState(() {
+                          if (item["query"] == "Phase") {
+                            phase = value;
+                          } else if (item["query"] == "Material Type") {
+                            materialType = value;
+                          } else if (item["query"] == "Quantity Type") {
+                            quantityType = value;
+                          } else if (item["query"] == "Vehicle Type") {
+                            vehicleType = value;
+                          }
+                        });
+                      },
                     ),
                   ),
                   Column(
@@ -93,6 +114,7 @@ class _AddShipmentState extends State<AddShipment> {
                     children: [
                       DeliveryQuery(query: "Quantity"),
                       TextFormField(
+                        keyboardType: TextInputType.number,
                         decoration: InputDecoration(
                           hintText: "Enter quantity",
                           fillColor: Colors.white,
@@ -101,6 +123,20 @@ class _AddShipmentState extends State<AddShipment> {
                             borderRadius: BorderRadius.circular(10.0),
                           ),
                         ),
+                        validator: (value) {
+                          if (value == null || value.isEmpty) {
+                            return "Please enter quantity";
+                          }
+                          if (int.tryParse(value) == null) {
+                            return "Please enter a valid number";
+                          }
+                          return null;
+                        },
+                        onChanged: (value) {
+                          setState(() {
+                            quantity = int.parse(value);
+                          });
+                        },
                       ),
                       SizedBox(height: 25.0),
                       DeliveryQuery(query: "Schedule Date"),
@@ -115,7 +151,10 @@ class _AddShipmentState extends State<AddShipment> {
                           ),
                           suffixIcon: Icon(Icons.calendar_today),
                         ),
-                        onTap: _pickDate,
+                        onTap: () async {
+                          FocusScope.of(context).requestFocus(FocusNode());
+                          await _pickDate();
+                        },
                       ),
                       SizedBox(height: 25.0),
                       Align(
@@ -129,7 +168,15 @@ class _AddShipmentState extends State<AddShipment> {
                               vertical: 10.0,
                             ),
                           ),
-                          onPressed: () {},
+                          onPressed: () {
+                            if (_formKey.currentState!.validate()) {
+                              Navigator.of(context).push(
+                                MaterialPageRoute(
+                                  builder: (context) => PickLocation(),
+                                ),
+                              );
+                            }
+                          },
                           child: Text("Next", style: TextStyle(fontSize: 18.0)),
                         ),
                       ),
