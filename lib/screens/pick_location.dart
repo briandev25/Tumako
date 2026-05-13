@@ -1,4 +1,6 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_dotenv/flutter_dotenv.dart';
+import 'package:flutter_polyline_points/flutter_polyline_points.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
 
 class PickLocation extends StatefulWidget {
@@ -9,18 +11,63 @@ class PickLocation extends StatefulWidget {
 }
 
 class _PickLocationState extends State<PickLocation> {
-  late GoogleMapController _mapController;
-  Marker? _pickupLocationMarker;
-  Marker? _dropLocationMarker;
+  final String? googleMapsApiKey = dotenv.env["MAPS_API_KEY"];
   static const _initialCameraPosition = CameraPosition(
     target: LatLng(37.773972, -122.431297),
     zoom: 10.0,
   );
+  late GoogleMapController _mapController;
+  Marker? _pickupLocationMarker;
+  Marker? _dropLocationMarker;
+
+  LatLng? origin;
+  LatLng? destination;
+
+  Set<Polyline> _polylines = {};
+
+  Future<List<LatLng>> fetchPolylinePoints() async {
+    final polylinePoints = PolylinePoints(apiKey: googleMapsApiKey!);
+    final results = await polylinePoints.getRouteBetweenCoordinates(
+      request: PolylineRequest(
+        origin: PointLatLng(origin!.latitude, origin!.longitude),
+        destination: PointLatLng(destination!.latitude, destination!.longitude),
+        mode: TravelMode.driving,
+      ),
+    );
+    print("results: ${results.points.length}");
+    if (results.points.isNotEmpty) {
+      print("Polyline points fetched successfully");
+      return results.points
+          .map((point) => LatLng(point.latitude, point.longitude))
+          .toList();
+    } else {
+      print("No polyline points fetched");
+      return [];
+    }
+  }
+
+  Future<void> _drawPolyline() async {
+    if (_pickupLocationMarker != null && _dropLocationMarker != null) {
+      List<LatLng> points = await fetchPolylinePoints();
+      setState(() {
+        _polylines.clear();
+        _polylines.add(
+          Polyline(
+            polylineId: PolylineId("route"),
+            points: points,
+            color: Colors.blue,
+            width: 5,
+          ),
+        );
+      });
+    }
+  }
 
   void _addMarker(LatLng position) {
     if (_pickupLocationMarker == null ||
         (_pickupLocationMarker != null && _dropLocationMarker != null)) {
       setState(() {
+        origin = position;
         _pickupLocationMarker = Marker(
           markerId: MarkerId("pickup"),
           infoWindow: InfoWindow(title: "Pickup"),
@@ -29,16 +76,24 @@ class _PickLocationState extends State<PickLocation> {
           ),
           position: position,
         );
+        _dropLocationMarker = null;
+        print("Pickup Location: ${position.latitude}, ${position.longitude}");
       });
     } else {
       setState(() {
+        destination = position;
         _dropLocationMarker = Marker(
           markerId: MarkerId("drop"),
           infoWindow: InfoWindow(title: "Drop"),
           icon: BitmapDescriptor.defaultMarkerWithHue(BitmapDescriptor.hueRed),
           position: position,
         );
+
+        print("Drop Location: ${position.latitude}, ${position.longitude}");
       });
+    }
+    if (_pickupLocationMarker != null && _dropLocationMarker != null) {
+      _drawPolyline();
     }
   }
 
@@ -64,6 +119,7 @@ class _PickLocationState extends State<PickLocation> {
           if (_pickupLocationMarker != null) _pickupLocationMarker!,
           if (_dropLocationMarker != null) _dropLocationMarker!,
         },
+        polylines: _polylines,
       ),
 
       floatingActionButton: FloatingActionButton(

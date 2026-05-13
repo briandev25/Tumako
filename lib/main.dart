@@ -1,9 +1,14 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:tumako/constants/app_colors.dart';
 //import 'package:tumako/screens/auth/register.dart';
 import 'package:tumako/screens/home/homepage.dart';
 
-void main() {
+void main() async {
+  WidgetsFlutterBinding.ensureInitialized();
+
+  await dotenv.load(fileName: ".env");
+
   runApp(MyApp());
 }
 

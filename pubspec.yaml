@@ -41,6 +41,7 @@ dependencies:
   google_nav_bar: ^5.0.7
   flutter_dotenv: ^6.0.1
   google_maps_flutter: ^2.17.0
+  flutter_polyline_points: ^3.1.0
 
 dev_dependencies:
   flutter_test:
@@ -60,6 +61,7 @@ dev_dependencies:
 flutter:
   assets:
     - assets/images/
+    - .env
 
   # The following line ensures that the Material Icons font is
   # included with your application, so that you can use the icons in
