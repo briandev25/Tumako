@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
-import 'package:flutter_polyline_points/flutter_polyline_points.dart';
+import 'package:flutter_polyline_points/flutter_polyline_points.dart' as pl;
 import 'package:google_maps_flutter/google_maps_flutter.dart';
 
 class PickLocation extends StatefulWidget {
@@ -23,21 +23,31 @@ class _PickLocationState extends State<PickLocation> {
   LatLng? origin;
   LatLng? destination;
 
-  Set<Polyline> _polylines = {};
+  final Set<Polyline> _polylines = {};
 
   Future<List<LatLng>> fetchPolylinePoints() async {
-    final polylinePoints = PolylinePoints(apiKey: googleMapsApiKey!);
-    final results = await polylinePoints.getRouteBetweenCoordinates(
-      request: PolylineRequest(
-        origin: PointLatLng(origin!.latitude, origin!.longitude),
-        destination: PointLatLng(destination!.latitude, destination!.longitude),
-        mode: TravelMode.driving,
+    final polylinePoints = pl.PolylinePoints(apiKey: googleMapsApiKey!);
+
+    pl.RoutesApiRequest request = pl.RoutesApiRequest(
+      origin: pl.PointLatLng(origin!.latitude, origin!.longitude),
+      destination: pl.PointLatLng(
+        destination!.latitude,
+        destination!.longitude,
       ),
+      travelMode: pl.TravelMode.driving,
+      routingPreference: pl.RoutingPreference.trafficAware,
     );
-    print("results: ${results.points.length}");
-    if (results.points.isNotEmpty) {
-      print("Polyline points fetched successfully");
-      return results.points
+
+    pl.RoutesApiResponse response = await polylinePoints
+        .getRouteBetweenCoordinatesV2(request: request);
+
+    if (response.routes.isNotEmpty) {
+      pl.Route route = response.routes.first;
+
+      print('Duration: ${route.durationMinutes} minutes');
+      print('Distance: ${route.distanceKm} km');
+
+      return route.polylinePoints!
           .map((point) => LatLng(point.latitude, point.longitude))
           .toList();
     } else {
@@ -93,7 +103,9 @@ class _PickLocationState extends State<PickLocation> {
       });
     }
     if (_pickupLocationMarker != null && _dropLocationMarker != null) {
-      _drawPolyline();
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        _drawPolyline();
+      });
     }
   }
 
