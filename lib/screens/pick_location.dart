@@ -1,3 +1,4 @@
+import 'package:dio/dio.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:flutter_polyline_points/flutter_polyline_points.dart' as pl;
@@ -11,12 +12,14 @@ class PickLocation extends StatefulWidget {
 }
 
 class _PickLocationState extends State<PickLocation> {
-  final String? googleMapsApiKey = dotenv.env["MAPS_API_KEY"];
+  final googleMapsApiKey = dotenv.env["MAPS_API_KEY"];
+  final dio = Dio();
   static const _initialCameraPosition = CameraPosition(
     target: LatLng(37.773972, -122.431297),
     zoom: 10.0,
   );
   late GoogleMapController _mapController;
+  final TextEditingController _searchController = TextEditingController();
   Marker? _pickupLocationMarker;
   Marker? _dropLocationMarker;
 
@@ -120,7 +123,35 @@ class _PickLocationState extends State<PickLocation> {
   Widget build(BuildContext context) {
     return Scaffold(
       extendBodyBehindAppBar: true,
-      appBar: AppBar(backgroundColor: Colors.transparent, elevation: 0),
+      appBar: AppBar(
+        backgroundColor: Colors.transparent,
+
+        title: Container(
+          height: 40.0,
+          decoration: BoxDecoration(
+            borderRadius: BorderRadius.circular(10.0),
+            color: Colors.white,
+          ),
+          child: TextField(
+            controller: _searchController,
+            textAlign: TextAlign.start,
+            decoration: InputDecoration(
+              hintText: "Search for a Location",
+              border: InputBorder.none,
+              prefixIcon: Icon(Icons.search),
+            ),
+            onChanged: (value) async {
+              if (value.isEmpty) return;
+              final String autoSearchURL =
+                  "https://maps.googleapis.com/maps/api/place/autocomplete/json"
+                  "?input=$value&key=$googleMapsApiKey";
+
+              final response = await dio.get(autoSearchURL);
+              print(response.data);
+            },
+          ),
+        ),
+      ),
       body: GoogleMap(
         zoomControlsEnabled: false,
         myLocationButtonEnabled: false,
